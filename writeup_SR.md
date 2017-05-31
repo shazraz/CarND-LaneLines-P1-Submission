@@ -1,9 +1,6 @@
 # **Finding Lane Lines on the Road** 
 
 ## Writeup
-
-### You can use this file as a template for your writeup if you want to submit it as a markdown file. But feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
 **Finding Lane Lines on the Road**
@@ -45,16 +42,17 @@ Once the gradients and midpoints were separated, an average gradient and midpoin
 ![alt text][image3]
 
 ### 2. Identify potential shortcomings with your current pipeline
+One limitation of this pipeline is the simple pre-processing of the image (conversion to grayscale) prior to running the edge detection algorithm. This approach doesn't filter out artifacts in the roadway that may appear in the region of interest as seen in the challenge video.
 
 The current pipeline is based on a crude averaging of the hough transform lines to extrapolate the lane lines. This approach is limited in its effectiveness and fails if the lane lines are curved since a linear line is fit. 
 
-Another limitation of the current method is the fixed means used to discard "outlier" lines that may skew the averages. The bounds are based on estimations and will not reflect all scenarios.
+Another limitation of the current method is the fixed means used to discard "outlier" lines that may skew the averages. The bounds are based on estimations and will not reflect all scenarios. This was also clearly visible in the challenge video.
 
-In addition, the edge detection algorithm is carried out on a grayscale version of the image. This also has it's limitations s
-
+Finally, the extrapolated lines are calculated on a frame-by-frame basis which results in jitter in the lines when the video is played. This could be mitigated by using a moving average across the frames, which at this point, is well beyond my skill level.
 
 ### 3. Suggest possible improvements to your pipeline
 
-A possible improvement would be to ...
+A first improvement would be to convert the image to an HSV colormap and extract the yellow and white line information. A composite image with just the lane lines would be a much better candidate for edge detection and hough line calculation. I attempted an HSV transform and had limited success with extracting the yellow stripe. The white stripe, however, eluded me for now.
 
-Another potential improvement could be to ...
+Another potential improvement could be to remove outlier lines by calculating how far the gradient is from the mean gradient. A first pass on the hough transform lines would calculate the complete mean gradient and std dev. A second pass could then be used to filter out the lines where the gradient is 2 or 3 std devs away. The resulting mid-points could then be fit using a linear regression model instead of averaging the end-points and gradients. This could be taken one step further to do a second order polynomial fit which could fit curved lane lines as well. Both the standard deviation and linear regression approaches were unsuccessfully tested in this array. The standard deviation filter resulted in empty arrays on certain video frames which crashed the pipeline. I wasn't able to implement linear regression in a stable way (the linear regression fit would jump wildly at certain points) which I suspect was due to my choice of Hough parameter thresholds. I believe a smaller line length would have increased the population of lines allowing for a better fit. This approach, however, could not be fully investigated. The image below shows an example of where the linear regression failed:
+
